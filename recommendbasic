@@ -1,0 +1,60 @@
+import requests
+import spotipy
+import json
+
+
+
+# SETTINGS 
+endpoint_url = "https://api.spotify.com/v1/recommendations?"
+token = "BQDut6_9JHNjXh3IVWuvFuVgL20jThge1Vtso1AdzJJDn1ZlAoDC5DLVukm-o6GlrmdCU63UEf9I6hfizRaJEnQvp3W1ZEavk2oZtj2hN_DYHVT6bRwfiqySialbF_qoE98G3MHYENBvH88fdcno5I4kiGZjDYzMpwUxcgYwEcldoorya6jr2Ktdj2wjPe3oZB_YeusFxHuv-CWz-fK1fnBBio9l5P-I2KmTVXJYbTQhWh-bFXjWlKz7uxak0kaFuOCzlevmXkyZ1BrZNg"
+user_id = "katiesunnyd"
+
+# OUR FILTERS
+limit=10
+market="US"
+seed_genres="pop"
+target_danceability=0.4
+uris = []
+seed_artists = '4IWBUUAFIplrNtaOHcJPRM' #james arthur ID
+#seed_tracks='55SfSsxneljXOk5S3NVZIW'
+
+#create our query
+query = f'{endpoint_url}limit={limit}&market={market}&seed_genres={seed_genres}&target_danceability={target_danceability}'
+query += f'&seed_artists={seed_artists}'
+#query += f'&seed_tracks={seed_tracks}'
+
+
+response =requests.get(query, 
+               headers={"Content-Type":"application/json", 
+                        "Authorization":"Bearer BQDut6_9JHNjXh3IVWuvFuVgL20jThge1Vtso1AdzJJDn1ZlAoDC5DLVukm-o6GlrmdCU63UEf9I6hfizRaJEnQvp3W1ZEavk2oZtj2hN_DYHVT6bRwfiqySialbF_qoE98G3MHYENBvH88fdcno5I4kiGZjDYzMpwUxcgYwEcldoorya6jr2Ktdj2wjPe3oZB_YeusFxHuv-CWz-fK1fnBBio9l5P-I2KmTVXJYbTQhWh-bFXjWlKz7uxak0kaFuOCzlevmXkyZ1BrZNg"})
+json_response = response.json()
+
+
+print('Recommended Songs:')
+for i,j in enumerate(json_response['tracks']):
+          uris.append(j['uri'])
+          print(f"{i+1}) \"{j['name']}\" by {j['artists'][0]['name']}")
+
+
+
+#create a new playlist
+endpoint_url = "https://api.spotify.com/v1/users/katiesunnyd/playlists"
+request_body = json.dumps({
+          "name": "pop like james arthur but using python",
+          "description": "my first programmatic playlist!",
+          "public": False # let's keep it between us - for now
+        })
+response = requests.post(url = endpoint_url, data = request_body, headers={"Content-Type":"application/json", 
+                        "Authorization":"Bearer BQDut6_9JHNjXh3IVWuvFuVgL20jThge1Vtso1AdzJJDn1ZlAoDC5DLVukm-o6GlrmdCU63UEf9I6hfizRaJEnQvp3W1ZEavk2oZtj2hN_DYHVT6bRwfiqySialbF_qoE98G3MHYENBvH88fdcno5I4kiGZjDYzMpwUxcgYwEcldoorya6jr2Ktdj2wjPe3oZB_YeusFxHuv-CWz-fK1fnBBio9l5P-I2KmTVXJYbTQhWh-bFXjWlKz7uxak0kaFuOCzlevmXkyZ1BrZNg"})
+
+#fill new playlist w recs
+playlist_id = response.json()['id']
+
+endpoint_url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks"
+
+request_body = json.dumps({
+          "uris" : uris
+        })
+response = requests.post(url = endpoint_url, data = request_body, headers={"Content-Type":"application/json", 
+                        "Authorization": "Bearer BQDut6_9JHNjXh3IVWuvFuVgL20jThge1Vtso1AdzJJDn1ZlAoDC5DLVukm-o6GlrmdCU63UEf9I6hfizRaJEnQvp3W1ZEavk2oZtj2hN_DYHVT6bRwfiqySialbF_qoE98G3MHYENBvH88fdcno5I4kiGZjDYzMpwUxcgYwEcldoorya6jr2Ktdj2wjPe3oZB_YeusFxHuv-CWz-fK1fnBBio9l5P-I2KmTVXJYbTQhWh-bFXjWlKz7uxak0kaFuOCzlevmXkyZ1BrZNg"})
+print(response.status_code)
